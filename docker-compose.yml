@@ -4,9 +4,9 @@ services:
   db:
     image: postgres:15
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=odoo
-      - POSTGRES_PASSWORD=odoo
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
     volumes:
       - db-data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -17,13 +17,13 @@ services:
       - db
     ports:
       - "8069:8069"
+    environment:
+      HOST: db
+      USER: odoo
+      PASSWORD: odoo
     volumes:
       - ./odoo-conf:/etc/odoo
       - ./addons:/mnt/extra-addons
-    environment:
-      - HOST=db
-      - USER=odoo
-      - PASSWORD=odoo
     restart: unless-stopped
 
 volumes:

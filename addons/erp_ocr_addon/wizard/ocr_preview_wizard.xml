@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ocr_preview_wizard_form" model="ir.ui.view">
+        <field name="name">ocr.preview.wizard.form</field>
+        <field name="model">ocr.preview.wizard</field>
+        <field name="arch" type="xml">
+            <form string="OCR Preview &amp; Confirmation" create="false" edit="true">
+                <sheet>
+
+                    <group string="Document">
+                        <field name="doc_type" readonly="1"/>
+                        <field name="name" readonly="1"/>
+                    </group>
+
+                    <group string="Summary" col="2">
+                        <field name="vendor_name"/>
+                        <field name="invoice_date"/>
+                        <field name="total_amount"/>
+                        <field name="vat_amount"/>
+                        <field name="confidence_score" readonly="1"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Raw OCR Text">
+                            <field name="extracted_text" nolabel="1"/>
+                        </page>
+                        <page string="Log">
+                            <field name="extraction_log" nolabel="1"/>
+                        </page>
+                    </notebook>
+
+                </sheet>
+
+                <footer>
+                    <button name="action_run_ocr"
+                            type="object"
+                            string="Run OCR"
+                            class="btn-secondary"/>
+                    <button name="action_confirm"
+                            type="object"
+                            string="Confirm &amp; Save"
+                            class="btn-primary"/>
+                    <button special="cancel"
+                            string="Cancel"
+                            class="btn-link"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
