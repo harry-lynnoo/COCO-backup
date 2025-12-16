@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="ocr_dashboard_main" model="ocr.dashboard">
+        <field name="name">Clareo Dashboard</field>
+    </record>
+</odoo>

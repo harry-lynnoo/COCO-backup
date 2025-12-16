@@ -2,11 +2,12 @@
 <odoo>
     <data>
 
-        <!-- HOME ACTION -->
+        <!-- HOME ACTION (uses custom home view, NOT dashboard model!) -->
         <record id="action_ocr_home" model="ir.actions.act_window">
             <field name="name">Clareo Home</field>
-            <field name="res_model">ocr.dashboard</field>
+            <field name="res_model">ocr.document</field>
             <field name="view_mode">form</field>
+            <field name="view_id" ref="view_ocr_home_form"/>
             <field name="target">current</field>
         </record>
 
@@ -15,9 +16,7 @@
             <field name="name">Upload Invoice</field>
             <field name="res_model">ocr.document</field>
             <field name="view_mode">form</field>
-            <field name="context">
-                {'default_doc_type': 'invoice'}
-            </field>
+            <field name="context">{'default_doc_type': 'invoice'}</field>
             <field name="target">current</field>
         </record>
 
@@ -26,9 +25,7 @@
             <field name="name">Upload Receipt</field>
             <field name="res_model">ocr.document</field>
             <field name="view_mode">form</field>
-            <field name="context">
-                {'default_doc_type': 'receipt'}
-            </field>
+            <field name="context">{'default_doc_type': 'receipt'}</field>
             <field name="target">current</field>
         </record>
 
@@ -42,11 +39,12 @@
             <field name="target">current</field>
         </record>
 
-        <!-- Dashboard Analytics -->
+        <!-- DASHBOARD ANALYTICS (loads singleton record!) -->
         <record id="action_ocr_dashboard_analytics" model="ir.actions.act_window">
             <field name="name">OCR Dashboard</field>
             <field name="res_model">ocr.dashboard</field>
             <field name="view_mode">form</field>
+            <field name="res_id" ref="ocr_dashboard_singleton"/> <!-- FIX -->
             <field name="target">current</field>
         </record>
 

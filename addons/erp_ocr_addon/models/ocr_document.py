@@ -10,9 +10,7 @@ class OCRDocument(models.Model):
     _description = "OCR Document"
     _order = "create_date desc"
 
-    # -------------------------
     # BASIC FIELDS
-    # -------------------------
     name = fields.Char(string="Document Name", required=True)
     file = fields.Binary(string="File", attachment=True, required=True)
     doc_type = fields.Selection(
@@ -36,9 +34,6 @@ class OCRDocument(models.Model):
         readonly=True,
     )
 
-    # -------------------------
-    # STATUS
-    # -------------------------
     status = fields.Selection(
         [
             ("uploaded", "Uploaded"),
@@ -51,9 +46,6 @@ class OCRDocument(models.Model):
     )
     progress = fields.Integer(string="Progress (%)", default=0)
 
-    # -------------------------
-    # OCR RESULT FIELDS
-    # -------------------------
     vendor_name = fields.Char(string="Vendor / Shop Name")
     invoice_date = fields.Date(string="Invoice / Receipt Date")
 
@@ -64,7 +56,6 @@ class OCRDocument(models.Model):
     extracted_text = fields.Text(string="Raw OCR Text")
     extraction_log = fields.Text(string="Extraction Log")
 
-    # For history filtering / dashboard
     is_invoice = fields.Boolean(string="Is Invoice", compute="_compute_type_flags")
     is_receipt = fields.Boolean(string="Is Receipt", compute="_compute_type_flags")
 
@@ -73,40 +64,23 @@ class OCRDocument(models.Model):
             rec.is_invoice = rec.doc_type == "invoice"
             rec.is_receipt = rec.doc_type == "receipt"
 
-    # ------------------------------------------
-    # AUTO-GENERATE DOCUMENT NAME USING SEQUENCE
-    # ------------------------------------------
     @api.model
     def create(self, vals):
-        # If no name was given, auto-generate one
         if not vals.get("name"):
             seq = self.env["ir.sequence"].next_by_code("ocr.document") or "OCR-0000"
             vals["name"] = seq
         return super().create(vals)
 
-    # -------------------------
-    # MAIN OCR ACTION
-    # -------------------------
     def action_run_ocr(self):
-        """
-        Called from the form 'Run OCR' button.
-        - Uses OCRParser to run Tesseract on self.file
-        - Fills fields and marks status/progress
-        """
         for doc in self:
             if not doc.file:
                 raise UserError(_("Please upload a file before running OCR."))
 
-            # Mark as processing
-            doc.write({
-                "status": "processing",
-                "progress": 10,
-            })
+            doc.write({"status": "processing", "progress": 10})
 
             text = OCRParser.run_tesseract(doc.file)
 
             if text.startswith("OCR ERROR:"):
-                # Mark as error and store message in log
                 new_log = (doc.extraction_log or "") + "\n" + text
                 doc.write({
                     "status": "error",
@@ -116,7 +90,6 @@ class OCRDocument(models.Model):
                 })
                 continue
 
-            # Parse fields
             data = OCRParser.extract_fields(text)
 
             log_lines = [
@@ -129,7 +102,6 @@ class OCRDocument(models.Model):
             if data.get("invoice_date_raw"):
                 log_lines.append(f"Raw date: {data['invoice_date_raw']}")
 
-            # NOTE: we keep invoice_date empty for now (raw date in log)
             vals = {
                 "status": "completed",
                 "progress": 100,
@@ -144,29 +116,3 @@ class OCRDocument(models.Model):
             doc.write(vals)
 
         return True
-
-    # -------------------------
-    # ACTIONS USED FROM TREE / UI
-    # -------------------------
-    def action_rerun_ocr(self):
-        """
-        Called from the 'Re-run OCR' button in the history tree.
-        Just calls action_run_ocr again.
-        """
-        for rec in self:
-            rec.action_run_ocr()
-        return True
-
-    def action_view_image(self):
-        """
-        Open form view (same record) so the user can see the file + result.
-        Used by the 'View' button in history tree.
-        """
-        self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "res_model": "ocr.document",
-            "view_mode": "form",
-            "res_id": self.id,
-            "target": "current",
-        }

@@ -15,25 +15,30 @@
         # 1) Security
         "security/ir.model.access.csv",
 
-        # 2) Sequences
+        # 2) Sequences / initial data
         "data/ocr_sequences.xml",
 
-        # 3) Actions and views
-        "views/ocr_actions.xml",
-        "views/ocr_home_view.xml",
-
-        # Main document views (tree + search + form)
+        # 3) Main document views (tree + search + form) → MUST LOAD FIRST
         "views/ocr_document_tree.xml",
         "views/ocr_document_search.xml",
         "views/ocr_document_form.xml",
 
-        # Dashboard
+        # 4) Dashboard
         "views/ocr_dashboard_views.xml",
 
-        # (Optional) Wizard XML if you still use it and it's valid
-        # "wizard/ocr_preview_wizard.xml",
+        # 5) Actions and special views → MUST LOAD AFTER TREE/SEARCH/FORM
+        "views/ocr_actions.xml",
+        "views/ocr_home_view.xml",
 
-        # Menus (last)
+        # 6) Menus (last)
         "views/menus.xml",
     ],
+
+    # 7) Static assets (JS for charts)
+    "assets": {
+        "web.assets_backend": [
+            "erp_ocr_addon/static/lib/chart.min.js",
+            "erp_ocr_addon/static/src/js/ocr_dashboard_charts.js",
+        ],
+    },
 }
