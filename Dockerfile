@@ -2,14 +2,13 @@ FROM odoo:17
 
 USER root
 
-# Install Tesseract OCR engine + language data
 RUN apt-get update && apt-get install -y \
+    python3-pip \
     tesseract-ocr \
     tesseract-ocr-eng \
     tesseract-ocr-osd \
-    && apt-get clean
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-RUN pip3 install pytesseract Pillow
+RUN pip3 install --no-cache-dir pytesseract Pillow
 
 USER odoo

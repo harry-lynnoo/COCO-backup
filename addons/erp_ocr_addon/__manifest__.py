@@ -1,44 +1,41 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Clareo OCR Finance",
-    "summary": "Invoice & Receipt OCR Processing for Accounting Automation",
+    "summary": "Invoice & Receipt OCR Processing (Extract → Review → Export)",
     "version": "1.0",
     "category": "Accounting",
     "author": "Your Team",
-    "website": "https://yourwebsite.com",
     "license": "LGPL-3",
     "depends": ["base", "web"],
     "installable": True,
     "application": True,
 
     "data": [
-        # 1) Security
+        # Security
         "security/ir.model.access.csv",
 
-        # 2) Sequences / initial data
+        # Sequences
         "data/ocr_sequences.xml",
 
-        # 3) Main document views (tree + search + form) → MUST LOAD FIRST
+        # Upload forms FIRST
+        "views/ocr_invoice_form.xml",
+        "views/ocr_receipt_form.xml",
+
+        # Core views
         "views/ocr_document_tree.xml",
         "views/ocr_document_search.xml",
         "views/ocr_document_form.xml",
 
-        # 4) Dashboard
+        # Optional dashboard
         "views/ocr_dashboard_views.xml",
 
-        # 5) Actions and special views → MUST LOAD AFTER TREE/SEARCH/FORM
+        # Actions AFTER all views
         "views/ocr_actions.xml",
+
+        # Home view AFTER actions
         "views/ocr_home_view.xml",
 
-        # 6) Menus (last)
+        # Menus LAST
         "views/menus.xml",
     ],
-
-    # 7) Static assets (JS for charts)
-    "assets": {
-        "web.assets_backend": [
-            "erp_ocr_addon/static/lib/chart.min.js",
-            "erp_ocr_addon/static/src/js/ocr_dashboard_charts.js",
-        ],
-    },
 }

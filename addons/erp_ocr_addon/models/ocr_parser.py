@@ -9,94 +9,102 @@ import pytesseract
 
 class OCRParser:
     """
-    Small helper class to run Tesseract on a base64 image (Odoo binary field)
-    and extract a few useful fields with regex.
+    Helper class to run Tesseract on a base64 image (Odoo binary field)
+    and extract fields with regex heuristics.
     """
 
     @staticmethod
     def run_tesseract(base64_data):
-        """
-        Convert base64 → image → OCR text using Tesseract.
-        :param base64_data: base64-encoded bytes/str from ocr.document.file
-        :return: text (str)
-        """
         if not base64_data:
             return ""
 
         try:
-            # Odoo binary fields can be bytes or str; normalize to bytes
             if isinstance(base64_data, str):
                 image_data = base64.b64decode(base64_data)
             else:
                 image_data = base64.b64decode(base64_data)
 
             image = Image.open(io.BytesIO(image_data))
-
-            # You can tweak lang / config later if needed
             text = pytesseract.image_to_string(image)
             return text or ""
 
         except Exception as e:
-            # We return the error text; caller will mark status = "error"
             return f"OCR ERROR: {str(e)}"
 
     @staticmethod
     def extract_fields(text):
         """
-        Simple regex-based extraction for demo.
-        You can improve these patterns later.
+        Regex-based extraction (basic).
+        You will improve these patterns later.
         """
-        fields = {}
+        fields = {
+            "vendor_name": "",
+            "supplier_name": "",
+            "customer_name": "",
+            "seller_id": "",
+            "company_issued": "",
+            "tax_id": "",
+            "vendor_phone": "",
+            "vendor_address": "",
+            "reference_number": "",
+            "invoice_date_raw": "",
+            "receipt_number": "",
+            "receipt_date_raw": "",
+            "subtotal_amount": 0.0,
+            "discount_amount": 0.0,
+            "vat_percent": 0.0,
+            "vat_amount": 0.0,
+            "total_amount": 0.0,
+            "confidence": 0.85,
+            "items": [],  # later: list of dict lines
+        }
+
         if not text:
-            fields["vendor_name"] = ""
-            fields["total_amount"] = 0.0
-            fields["vat_amount"] = 0.0
-            fields["confidence"] = 0.0
             return fields
 
-        # --- Vendor name ---
-        # Rough heuristic: first long-ish line of letters/numbers
+        # Vendor (heuristic: first long-ish line)
         vendor_match = re.search(r'^([A-Za-z][A-Za-z0-9 &\.\-]{4,})', text, re.MULTILINE)
-        fields["vendor_name"] = vendor_match.group(1).strip() if vendor_match else ""
+        if vendor_match:
+            fields["vendor_name"] = vendor_match.group(1).strip()
 
-        # --- Total amount ---
+        # Simple date
+        date_match = re.search(r'(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', text)
+        if date_match:
+            fields["invoice_date_raw"] = date_match.group(1)
+
+        # Total
         total_match = re.search(
             r'(Total\s*(Amount)?|Amount\s*Due)\s*[:\-]?\s*([0-9.,]+)',
             text,
             re.IGNORECASE,
         )
         if total_match:
-            raw_total = total_match.group(3).replace(',', '')
+            raw_total = total_match.group(3).replace(",", "")
             try:
                 fields["total_amount"] = float(raw_total)
             except ValueError:
                 fields["total_amount"] = 0.0
-        else:
-            fields["total_amount"] = 0.0
 
-        # --- VAT / Tax ---
+        # VAT value (amount)
         vat_match = re.search(
             r'(VAT|Tax)\s*[:\-]?\s*([0-9.,]+)',
             text,
             re.IGNORECASE,
         )
         if vat_match:
-            raw_vat = vat_match.group(2).replace(',', '')
+            raw_vat = vat_match.group(2).replace(",", "")
             try:
                 fields["vat_amount"] = float(raw_vat)
             except ValueError:
                 fields["vat_amount"] = 0.0
-        else:
-            fields["vat_amount"] = 0.0
 
-        # (Optional) date extraction – we keep it as text for now
-        date_match = re.search(
-            r'(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
-            text,
-        )
-        fields["invoice_date_raw"] = date_match.group(1) if date_match else ""
-
-        # Dummy confidence – later you can compute something real
-        fields["confidence"] = 0.85
+        # Discount (optional)
+        disc_match = re.search(r'(Discount)\s*[:\-]?\s*([0-9.,]+)', text, re.IGNORECASE)
+        if disc_match:
+            raw_disc = disc_match.group(2).replace(",", "")
+            try:
+                fields["discount_amount"] = float(raw_disc)
+            except ValueError:
+                fields["discount_amount"] = 0.0
 
         return fields
