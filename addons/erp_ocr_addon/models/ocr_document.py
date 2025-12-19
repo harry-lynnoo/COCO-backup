@@ -100,19 +100,16 @@ class OCRDocument(models.Model):
             doc.write({"status": "processing", "progress": 10})
 
             # =========================
-            # STEP 1: Detect file type
+            # STEP 1: Detect file type (ROBUST)
             # =========================
-            filename = (doc.file_filename or "").lower()
+            file_bytes = base64.b64decode(doc.file or b"")
 
-            if filename.endswith(".pdf"):
+            # PDF files always start with %PDF
+            if file_bytes[:4] == b"%PDF":
                 text = OCRParser.run_pdf_ocr(doc.file)
             else:
                 text = OCRParser.run_tesseract(doc.file)
-
-            if text.startswith("OCR ERROR"):
-                doc.write({"status": "error", "progress": 100})
-                return
-
+                
             data = OCRParser.extract_fields(text)
 
             # =========================
