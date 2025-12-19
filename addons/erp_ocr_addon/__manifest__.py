@@ -6,7 +6,7 @@
     "category": "Accounting",
     "author": "Your Team",
     "license": "LGPL-3",
-    "depends": ["base", "web"],
+    "depends": ["base", "web", "account"],
     "installable": True,
     "application": True,
 

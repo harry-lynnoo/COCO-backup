@@ -19,9 +19,19 @@
                   string="View Full Image"
                   class="btn-secondary"/>
 
+          <!-- ✅ Create Vendor Bill (Odoo 17 safe) -->
+          <button name="action_create_vendor_bill"
+                  type="object"
+                  string="Create Vendor Bill"
+                  class="btn-primary"
+                  invisible="invoice_id"/>
+
+          <!-- 🔑 REQUIRED hidden field for Odoo 17 -->
+          <field name="invoice_id" invisible="1"/>
+
           <field name="status"
-                 widget="statusbar"
-                 statusbar_visible="uploaded,processing,completed,error"/>
+                widget="statusbar"
+                statusbar_visible="uploaded,processing,completed,error"/>
         </header>
 
         <sheet>
@@ -119,8 +129,7 @@
                   Uploaded Document
                 </div>
 
-                <!-- ODOO 17 SAFE IMAGE FIELD -->
-                <field name="file" widget="image" class="oe_avatar">
+                <field name="file">
                   <attribute name="readonly">status != 'uploaded'</attribute>
                 </field>
 

@@ -12,7 +12,9 @@ services:
     restart: unless-stopped
 
   odoo:
+    build: .
     image: coco-odoo:ocr
+    container_name: coco-odoo
     depends_on:
       - db
     ports:
